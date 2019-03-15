@@ -48,29 +48,6 @@ func (i *authorsFlag) Type() string {
 
 var authors authorsFlag
 
-const template = `# Background
-
-Enter the background to his ADR here.  Setup the context
-so we are on the same page.  Keep it simple and easy to
-follow. Don't tell me the problem
-
-# Complication
-
-Now tell me where the problem/complication is that this ADR
-is addressing.
-
-# Options Considered
-
-1. This was one
-2. This was another
-
-# Decision
-
-What did we decided
-
-# Outcome
-`
-
 // newCmd represents the new command
 var newCmd = &cobra.Command{
 	Use:   "new",

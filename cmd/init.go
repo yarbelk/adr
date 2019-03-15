@@ -34,12 +34,12 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("init called")
 		fmt.Println("dir is", viper.GetString("ADRDir"))
-		updateOrCreateConf(viper.GetString("ADRDir"))
+		updateOrCreateConf(viper.GetString("ADRDir"), viper.GetString("renderDir"))
 		os.MkdirAll(viper.GetString("ADRDir"), os.ModePerm)
 	},
 }
 
-func updateOrCreateConf(dir string) {
+func updateOrCreateConf(dir, renderDir string) {
 	c := make(map[string]string)
 	func() {
 		f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_CREATE, 0755)
@@ -58,6 +58,7 @@ func updateOrCreateConf(dir string) {
 		os.Exit(1)
 	}
 	c["ADRDir"] = dir
+	c["renderDir"] = dir
 	f.Seek(0, 0)
 	if err := toml.NewEncoder(f).Encode(c); err != nil {
 		log.Fatal(err)

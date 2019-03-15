@@ -74,6 +74,7 @@ func initGlobal() {
 	global.AddConfigPath("$HOME/.config/adr")
 	global.AddConfigPath("/etc/adr")
 	global.SetDefault("template", template)
+	global.SetDefault("baseTemplate", baseTemplate)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -88,6 +89,7 @@ func initConfig() {
 
 	viper.AddConfigPath(".")
 	viper.SetDefault("ADRDir", "docs/adr")
+	viper.SetDefault("renderDir", "docs/")
 	viper.SetDefault("Authors", []string{""})
 	viper.AutomaticEnv() // read in environment variables that match
 
