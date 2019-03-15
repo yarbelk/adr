@@ -81,17 +81,23 @@ You need to pass in the title as a single argument:
 	adr new "This is the Title"`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		tmpl := global.GetString("template")
 		filedir := viper.GetString("ADRDir")
+
 		next := adr.NextNumber(filedir)
 		f, err := ioutil.TempFile("", "")
-		f.Write([]byte(template))
+		f.Write([]byte(tmpl))
 		tempFile := f.Name()
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer os.Remove(tempFile)
 		f.Close()
-		text := getText(tempFile)
+		text, _ := getText(tempFile)
+		if text == tmpl {
+			log.Println("No changes to text, ignoring new command")
+			return
+		}
 		a := adr.ADR{
 			Title:   args[0],
 			Number:  next,
@@ -115,8 +121,11 @@ You need to pass in the title as a single argument:
 	},
 }
 
-func getText(filename string) string {
+func getText(filename string) (string, error) {
 	editor := os.Getenv("EDITOR")
+	if visual := os.Getenv("VISUAL"); visual != "" {
+		editor = visual
+	}
 	log.Println("opening", editor, filename)
 	cmd := exec.Command(editor, filename)
 
@@ -134,7 +143,7 @@ func getText(filename string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(b)
+	return string(b), nil
 }
 
 func init() {

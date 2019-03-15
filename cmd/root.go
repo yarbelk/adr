@@ -24,6 +24,7 @@ import (
 )
 
 var cfgFile string
+var global *viper.Viper
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -52,7 +53,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig, initGlobal)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -60,6 +61,14 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.adr.yaml)")
 	rootCmd.PersistentFlags().String("dir", "", "where to store the adrs")
 	viper.BindPFlag("ADRDir", rootCmd.PersistentFlags().Lookup("dir"))
+	global = viper.New()
+}
+
+func initGlobal() {
+	global.SetConfigName("config")
+	global.AddConfigPath("$HOME/.config/adr")
+	global.AddConfigPath("/etc/adr")
+	global.SetDefault("template", template)
 }
 
 // initConfig reads in config file and ENV variables if set.
