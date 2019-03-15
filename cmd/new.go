@@ -93,7 +93,7 @@ You need to pass in the title as a single argument:
 		}
 		defer os.Remove(tempFile)
 		f.Close()
-		text, _ := getText(tempFile)
+		text := getText(tempFile)
 		if text == tmpl {
 			log.Println("No changes to text, ignoring new command")
 			return
@@ -121,7 +121,9 @@ You need to pass in the title as a single argument:
 	},
 }
 
-func getText(filename string) (string, error) {
+// getText will explode on problems, like non-zero status
+// codes and prevent anyting from happening.
+func getText(filename string) string {
 	editor := os.Getenv("EDITOR")
 	if visual := os.Getenv("VISUAL"); visual != "" {
 		editor = visual
@@ -143,7 +145,7 @@ func getText(filename string) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(b), nil
+	return string(b)
 }
 
 func init() {

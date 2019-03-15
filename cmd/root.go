@@ -28,7 +28,12 @@ var global *viper.Viper
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "adr",
+	Use: "adr",
+	Version: `0.1
+Copyright (C) 2019 James Rivett-Carnac
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.`,
 	Short: "Manage ADRs for a project",
 	Long: `Write, manage and list your  ADRs for a project.  For example:
 
