@@ -22,15 +22,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/yarbelk/adr/src/adr"
 )
 
 type authorsFlag []string
+type adrFlag []int
 
 func (i *authorsFlag) String() string {
 	s := []string(*i)
@@ -46,7 +47,28 @@ func (i *authorsFlag) Type() string {
 	return "list"
 }
 
+func (i *adrFlag) String() string {
+	s := []int(*i)
+	return fmt.Sprintf("%+v", s)
+}
+
+func (i *adrFlag) Set(value string) error {
+	v, err := strconv.Atoi(value)
+	fmt.Println("related/supercedes", v, err)
+	if err != nil {
+		return err
+	}
+	*i = append(*i, v)
+	return nil
+}
+
+func (i *adrFlag) Type() string {
+	return "list"
+}
+
 var authors authorsFlag
+var related adrFlag
+var supercedes adrFlag
 
 // newCmd represents the new command
 var newCmd = &cobra.Command{
@@ -75,25 +97,47 @@ You need to pass in the title as a single argument:
 			log.Println("No changes to text, ignoring new command")
 			return
 		}
-		a := adr.ADR{
-			Title:   args[0],
-			Number:  next,
-			Authors: authors,
-			Created: time.Now(),
-			Status:  adr.Draft,
-			Text:    text,
+		a := &adr.ADR{
+			Title:      args[0],
+			Number:     next,
+			Authors:    authors,
+			Created:    time.Now(),
+			Status:     adr.Draft,
+			Related:    related,
+			Supercedes: supercedes,
+			Text:       text,
 		}
-		fp := filepath.Join(filedir, a.Filename())
-		f, err = os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0644)
-		defer f.Close()
-		if err != nil {
-			fmt.Println(err)
-			fmt.Print(text)
-			os.Exit(1)
+		for _, r := range related {
+			if r >= next {
+				log.Fatalf("Cannot be related to %d, is a future ADR", r)
+			}
+			fp := filepath.Join(filedir, adr.ADR{Number: r}.Filename())
+			fmt.Println(fp)
+			old, err := adr.Load(fp)
+			if err != nil {
+				log.Fatal("failed to load old ADR in update related", err)
+			}
+			old.RelatesTo(next)
+			a.RelatesTo(old.Number)
+			old.UpdateFile(filedir)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		f.Seek(0, 0)
-		if err := toml.NewEncoder(f).Encode(a); err != nil {
-			log.Fatal(err)
+		for _, s := range supercedes {
+			if s >= next {
+				log.Fatalf("Cannot be related to %d, is a future ADR", s)
+			}
+			fp := filepath.Join(filedir, adr.ADR{Number: s}.Filename())
+			old, err := adr.Load(fp)
+			a.Supercede(old)
+			old.UpdateFile(filedir)
+			if err != nil {
+				log.Fatal("other here", err)
+			}
+		}
+		if err := a.UpdateFile(filedir); err != nil {
+			log.Fatal("Final Update", err)
 		}
 	},
 }
@@ -136,5 +180,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	newCmd.Flags().VarP(&authors, "authors", "", "Authors, repeat this flag for multiple")
+	newCmd.Flags().VarP(&authors, "authors", "a", "Authors, repeat this flag for multiple")
+	newCmd.Flags().VarP(&related, "related", "r", "Any related stories")
+	newCmd.Flags().VarP(&supercedes, "supercedes", "S", "Any related stories")
 }

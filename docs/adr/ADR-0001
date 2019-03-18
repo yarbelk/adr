@@ -1,0 +1,8 @@
+Title = "Use ADRs to track this project"
+Number = 1
+Authors = ["James Rivett-Carnac"]
+Created = 2019-03-07T05:52:33Z
+Status = "DRAFT"
+Impact = "High"
+Related = [3]
+Text = "# Background\n\nIt is important to maintain continutity of design and thought when running a project.\nThis becomes exponentially more complicated and important as more people contribute.\nWhen you are using Agile, you don't have \"Design Docs\" and Specs (this is considered\na *good* thing).  As a result, they cannot fulfil this role (which they don't do well\nanyway).  Historically, I've used the story history and epic history to track decisons.\n\n# Complication\n\nAs the team size and number of repositories grew, just using the history becomes un-\nmanagable.  As such a different plan is needed.\n\n# Options Considered\n\n1. Spend more time managing the history\n2. Switch to using ADRs\n\n# Decision\n\nUse ADRs\n\n# Outcome\n"

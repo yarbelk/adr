@@ -61,7 +61,7 @@ var renderCmd = &cobra.Command{
 
 			f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("Cant open file", err)
 			}
 			if err := tmpl.Execute(f, adr); err != nil {
 				log.Fatal(err)

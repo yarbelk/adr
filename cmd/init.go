@@ -42,7 +42,7 @@ var initCmd = &cobra.Command{
 func updateOrCreateConf(dir, renderDir string) {
 	c := make(map[string]string)
 	func() {
-		f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_CREATE, 0755)
+		f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_CREATE, 0644)
 		defer f.Close()
 		if err != nil {
 			fmt.Println("Failed to init the conf file: ", err)
@@ -51,7 +51,7 @@ func updateOrCreateConf(dir, renderDir string) {
 		m, e := toml.DecodeReader(f, &c)
 		fmt.Printf("%v\n, %v\n %v\n", c, m, e)
 	}()
-	f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_TRUNC, 0644)
 	defer f.Close()
 	if err != nil {
 		fmt.Println("Failed to init the conf file: ", err)

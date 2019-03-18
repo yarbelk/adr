@@ -1,0 +1,8 @@
+Title = "Add support for related"
+Number = 3
+Authors = ["James Rivett-Carnac", "Boss Daniel"]
+Created = 2019-03-18T09:47:54Z
+Status = "DRAFT"
+Impact = ""
+Related = [1]
+Text = "# Background\n\nNeed to be able to relate things together.\n\n# Complication\n\nits kinda annoying to update all the files\n\n# Options Considered\n\nignore it and do it by hand\ndo it.\n\n# Decision\n\nDid it\n\n# Outcome\n"
