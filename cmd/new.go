@@ -84,7 +84,7 @@ You need to pass in the title as a single argument:
 			Text:    text,
 		}
 		fp := filepath.Join(filedir, a.Filename())
-		f, err = os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0755)
+		f, err = os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0644)
 		defer f.Close()
 		if err != nil {
 			fmt.Println(err)

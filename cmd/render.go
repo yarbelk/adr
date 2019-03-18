@@ -50,7 +50,7 @@ var renderCmd = &cobra.Command{
 			inputFile := file.Name()
 			adr := adr.ADR{}
 			func() {
-				f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0755)
+				f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0644)
 				defer f.Close()
 				if err != nil {
 					log.Fatal("failed to open adr file", inputFile, err)
