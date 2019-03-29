@@ -28,6 +28,37 @@ import (
 	"github.com/yarbelk/adr/src/adr"
 )
 
+// Render out all the ADRs
+func Render(renderDir, baseTmpl, fileDir string) {
+	files, err := ioutil.ReadDir(fileDir)
+	tmpl := goTemplate.Must(goTemplate.New("adr").Parse(baseTmpl))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		inputFile := file.Name()
+		adr := adr.ADR{}
+		func() {
+			f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0644)
+			defer f.Close()
+			if err != nil {
+				log.Fatal("failed to open adr file", inputFile, err)
+			}
+			toml.DecodeReader(f, &adr)
+		}()
+		outputFile := path.Join(renderDir, file.Name()+".md")
+
+		f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+		if err != nil {
+			log.Fatal("Cant open file", err)
+		}
+		if err := tmpl.Execute(f, adr); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 // renderCmd represents the render command
 var renderCmd = &cobra.Command{
 	Use:   "render",
@@ -40,33 +71,7 @@ var renderCmd = &cobra.Command{
 		renderDir := viper.GetString("renderDir")
 		baseTmpl := global.GetString("baseTemplate")
 		fileDir := viper.GetString("ADRDir")
-		files, err := ioutil.ReadDir(fileDir)
-		tmpl := goTemplate.Must(goTemplate.New("adr").Parse(baseTmpl))
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		for _, file := range files {
-			inputFile := file.Name()
-			adr := adr.ADR{}
-			func() {
-				f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0644)
-				defer f.Close()
-				if err != nil {
-					log.Fatal("failed to open adr file", inputFile, err)
-				}
-				toml.DecodeReader(f, &adr)
-			}()
-			outputFile := path.Join(renderDir, file.Name()+".md")
-
-			f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
-			if err != nil {
-				log.Fatal("Cant open file", err)
-			}
-			if err := tmpl.Execute(f, adr); err != nil {
-				log.Fatal(err)
-			}
-		}
+		Render(renderDir, baseTmpl, fileDir)
 	},
 }
 

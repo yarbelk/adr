@@ -69,6 +69,7 @@ func (i *adrFlag) Type() string {
 var authors authorsFlag
 var related adrFlag
 var supercedes adrFlag
+var render bool
 
 // newCmd represents the new command
 var newCmd = &cobra.Command{
@@ -139,6 +140,13 @@ You need to pass in the title as a single argument:
 		if err := a.UpdateFile(filedir); err != nil {
 			log.Fatal("Final Update", err)
 		}
+		// Note: fix this silly interface for this.
+		if render {
+			renderDir := viper.GetString("renderDir")
+			baseTmpl := global.GetString("baseTemplate")
+			fileDir := viper.GetString("ADRDir")
+			Render(renderDir, baseTmpl, fileDir)
+		}
 	},
 }
 
@@ -183,4 +191,5 @@ func init() {
 	newCmd.Flags().VarP(&authors, "authors", "a", "Authors, repeat this flag for multiple")
 	newCmd.Flags().VarP(&related, "related", "r", "Any related stories")
 	newCmd.Flags().VarP(&supercedes, "supercedes", "S", "Any related stories")
+	newCmd.Flags().BoolVarP(&render, "render", "R", false, "also render the adrs")
 }
