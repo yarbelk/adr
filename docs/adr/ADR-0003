@@ -1,8 +1,7 @@
-Title = "Add support for related"
+Title = "ADRs should have a Writer/Reader interface"
 Number = 3
-Authors = ["James Rivett-Carnac", "Boss Daniel"]
-Created = 2019-03-18T09:47:54Z
+Authors = ["James Rivett-Carnac"]
+Created = 2019-03-29T04:18:03Z
 Status = "DRAFT"
 Impact = ""
-Related = [1]
-Text = "# Background\n\nNeed to be able to relate things together.\n\n# Complication\n\nits kinda annoying to update all the files\n\n# Options Considered\n\nignore it and do it by hand\ndo it.\n\n# Decision\n\nDid it\n\n# Outcome\n"
+Text = "# Background\n\nThe initial pass at writing this was 'get init, new and render' working\nas fast as possible.  As such, there is a lot of inline opening and closing\nof files; and this makes it \"hard\" to test.\n\n# Complication\n\nBy \"hard\" to test, I mean I can only YOLO it and test from the command line.\nThis means I miss things like the fact that multiple authors are not rendering\ncorrectly.  It also makes it much more annoying to work with and see what\nis going on in the code\n\n# Options Considered\n\n1. this interface\n```\nRead(*ADR) (ok bool, err error)\nWrite(*ADR) (n int, err error)\n```\nNot quite an `io.Reader`, but it is a domain specific reader.\nI *know* I want an ADR out.  The details of it are implementation\nspecific.\n\nMight need to have this as well:\n\n```\nfunc New(MarshalerUnMarshaler, io.ReadWriter) (ADRRepo) {}\n```\nWhich exposes a\n2. maybe something else: like the Marshal/Unmarshal interface\nfrom JSON?\n\n```\nMarshaler {\n  Marshal() ([]byte, error)\n}\n\nUnMarshaler {\n  UnMarshal([]byte) (error)\n}\n```\n\nThe problem with this is that its more the domain of\nthe encoding; and from an end user point of view (cobra.Command)\nI don't care.  I just want to 'read from this file', write\nto 'that file'.  the marshal/unmarshal stuff is entirely\ninterchangable.\n\n# Decision\n\nGoing to start with some kind Reader/Writer idea that\ntakes in a marshaler/unmarshaler.  that way later\nwe can do things like, configurable rendering and \nswappable encoding (YAML, XML <bleh>)\nusing the same abstraction\n\n# Outcome\n"
