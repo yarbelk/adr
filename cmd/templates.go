@@ -44,14 +44,12 @@ const baseTemplate = `# {{ .Title }}
 *Created:* {{ .Created }}
 *Status:* {{ .Status }}
 *Authors:*
-{{ range $a := .Authors -}}
-- {{ $a }}
-{{- end -}}
+{{ range $a := .Authors }}- {{ $a }}
+{{ end -}}
 {{ if .Related }}
 *Related*:
-{{ range $r := .Related -}}
-- {{ $r }}
-{{- end -}}
+{{ range $r := .Related }}- {{ $r }}
+{{ end -}}
 {{- end}}
 
 {{ .Text }}
