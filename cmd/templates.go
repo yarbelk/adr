@@ -41,12 +41,16 @@ What did we decided
 const baseTemplate = `# {{ .Title }}
 
 *Number:* {{ .Filename }}
+
 *Created:* {{ .Created }}
+
 *Status:* {{ .Status }}
+
 *Authors:*
 {{ range $a := .Authors }}- {{ $a }}
 {{ end -}}
 {{ if .Related }}
+
 *Related*:
 {{ range $r := .Related }}- {{ $r }}
 {{ end -}}
