@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/yarbelk/adr/src/adr"
+	"github.com/yarbelk/adr/src/serializer"
 )
 
 type authorsFlag []string
@@ -80,79 +81,116 @@ var newCmd = &cobra.Command{
 You need to pass in the title as a single argument:
 	adr new "This is the Title"`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		tmpl := global.GetString("template")
-		filedir := viper.GetString("ADRDir")
+	Run:  newADR,
+}
 
-		next := adr.NextNumber(filedir)
-		f, err := ioutil.TempFile("", "")
-		f.Write([]byte(tmpl))
-		tempFile := f.Name()
+func newADR(cmd *cobra.Command, args []string) {
+	// This is setting up the 'vim buffer/file for the basic new adr'
+	filedir := viper.GetString("ADRDir")
+
+	next := adr.NextNumber(filedir)
+	text, ok := getText()
+	if !ok {
+		log.Fatal("You need to actually edit the ADR text")
+	}
+	title := args[0]
+
+	newADR := &adr.ADR{
+		Title:      title,
+		Number:     next,
+		Authors:    authors,
+		Created:    time.Now(),
+		Status:     adr.Draft,
+		Related:    related,
+		Supercedes: supercedes,
+		Text:       text,
+	}
+	updateAllAdrs(newADR, filedir, next)
+}
+
+func updateAllAdrs(newADR *adr.ADR, filedir string, next int) {
+	// TODO: I don't like the stuff below here
+	for _, r := range related {
+		if r >= next {
+			log.Fatalf("Cannot be related to %d, is a future ADR", r)
+		}
+		fp := filepath.Join(filedir, adr.ADR{Number: r}.Filename())
+		if verbose {
+			fmt.Println(fp)
+		}
+
+		f, err := os.OpenFile(fp, os.O_RDWR, 0644)
+		defer f.Close()
 		if err != nil {
+			log.Fatalf("Impossible to open the adr %q, %v", fp, err)
+		}
+		oldADR := new(adr.ADR)
+		if err := serializer.NewUnmarshal(f).Unmarshal(oldADR); err != nil {
+			log.Fatal("failed to load old ADR in update related", err)
+		}
+		oldADR.RelatesTo(next)
+		newADR.RelatesTo(oldADR.Number)
+		f.Seek(0, 0)
+		f.Truncate(0)
+		if err := serializer.NewMarshal(f).Marshal(oldADR); err != nil {
 			log.Fatal(err)
 		}
-		defer os.Remove(tempFile)
-		f.Close()
-		text := getText(tempFile)
-		if text == tmpl {
-			log.Println("No changes to text, ignoring new command")
-			return
+	}
+	for _, s := range supercedes {
+		if s >= next {
+			log.Fatalf("Cannot be related to %d, is a future ADR", s)
 		}
-		a := &adr.ADR{
-			Title:      args[0],
-			Number:     next,
-			Authors:    authors,
-			Created:    time.Now(),
-			Status:     adr.Draft,
-			Related:    related,
-			Supercedes: supercedes,
-			Text:       text,
+		fp := filepath.Join(filedir, adr.ADR{Number: s}.Filename())
+		f, err := os.OpenFile(fp, os.O_RDWR, 0644)
+		defer f.Close()
+		if err != nil {
+			log.Fatalf("Impossible to open the adr %q, %v", fp, err)
 		}
-		for _, r := range related {
-			if r >= next {
-				log.Fatalf("Cannot be related to %d, is a future ADR", r)
-			}
-			fp := filepath.Join(filedir, adr.ADR{Number: r}.Filename())
-			fmt.Println(fp)
-			old, err := adr.Load(fp)
-			if err != nil {
-				log.Fatal("failed to load old ADR in update related", err)
-			}
-			old.RelatesTo(next)
-			a.RelatesTo(old.Number)
-			old.UpdateFile(filedir)
-			if err != nil {
-				log.Fatal(err)
-			}
+		oldADR := new(adr.ADR)
+		if err := serializer.NewUnmarshal(f).Unmarshal(oldADR); err != nil {
+			log.Fatal("failed to load old ADR in update related", err)
 		}
-		for _, s := range supercedes {
-			if s >= next {
-				log.Fatalf("Cannot be related to %d, is a future ADR", s)
-			}
-			fp := filepath.Join(filedir, adr.ADR{Number: s}.Filename())
-			old, err := adr.Load(fp)
-			a.Supercede(old)
-			old.UpdateFile(filedir)
-			if err != nil {
-				log.Fatal("other here", err)
-			}
+		newADR.Supercede(oldADR)
+
+		f.Seek(0, 0)
+		f.Truncate(0)
+		if err := serializer.NewMarshal(f).Marshal(oldADR); err != nil {
+			log.Fatal(err)
 		}
-		if err := a.UpdateFile(filedir); err != nil {
-			log.Fatal("Final Update", err)
+		if err != nil {
+			log.Fatal("Cant write out the old adr in a supercede operation", err)
 		}
-		// Note: fix this silly interface for this.
-		if render {
-			renderDir := viper.GetString("renderDir")
-			baseTmpl := global.GetString("baseTemplate")
-			fileDir := viper.GetString("ADRDir")
-			Render(renderDir, baseTmpl, fileDir)
-		}
-	},
+	}
+	fp := filepath.Join(filedir, newADR.Filename())
+	f, err := os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatal("failed to open file for new adr", err)
+	}
+
+	if err := serializer.NewMarshal(f).Marshal(newADR); err != nil {
+		log.Fatal("Final Update", err)
+	}
+	// Note: fix this silly interface for this.
+	if render {
+		renderDir := viper.GetString("renderDir")
+		baseTmpl := global.GetString("baseTemplate")
+		fileDir := viper.GetString("ADRDir")
+		Render(renderDir, baseTmpl, fileDir)
+	}
 }
 
 // getText will explode on problems, like non-zero status
 // codes and prevent anyting from happening.
-func getText(filename string) string {
+func getText() (string, bool) {
+	tmpl := global.GetString("template")
+	f, err := ioutil.TempFile("", "")
+	f.Write([]byte(tmpl))
+	filename := f.Name()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(filename)
+	f.Close()
 	editor := os.Getenv("EDITOR")
 	if visual := os.Getenv("VISUAL"); visual != "" {
 		editor = visual
@@ -163,7 +201,7 @@ func getText(filename string) string {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		log.Fatal("cmd error", err)
 	}
@@ -174,7 +212,12 @@ func getText(filename string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(b)
+	text := string(b)
+	if text == tmpl {
+		log.Println("No changes to text, ignoring new command")
+		return "", false
+	}
+	return text, true
 }
 
 func init() {

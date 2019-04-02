@@ -25,6 +25,7 @@ import (
 
 var cfgFile string
 var global *viper.Viper
+var verbose bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -65,6 +66,7 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.adr.yaml)")
 	rootCmd.PersistentFlags().String("dir", "", "where to store the adrs")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose the outputs")
 	viper.BindPFlag("ADRDir", rootCmd.PersistentFlags().Lookup("dir"))
 	global = viper.New()
 }

@@ -27,6 +27,7 @@ func Load(filepath string) (*ADR, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	a := new(ADR)
 	_, err = toml.DecodeReader(f, a)
 	return a, err

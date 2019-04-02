@@ -38,19 +38,6 @@ type ADR struct {
 	Text         string
 }
 
-type (
-	// Reader will consume something into an ADR ref.  OK if it worked (empty file vs. no file),
-	// error for err
-	Reader interface {
-		Read(*ADR) (ok bool, err error)
-	}
-	// Writer will write out an adr to a file as structured text.  N is the number of
-	// bytes written
-	Writer interface {
-		Write(ADR) (n int, err error)
-	}
-)
-
 // Filename is the filename for this adr, in the format ADR-1234.  Its the 'asperational'
 // or cannonical filename.
 func (a ADR) Filename() string {
