@@ -192,6 +192,10 @@ func getText() (string, bool) {
 	defer os.Remove(filename)
 	f.Close()
 	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		// set a 'sane' default
+		editor = "nvim"
+	}
 	if visual := os.Getenv("VISUAL"); visual != "" {
 		editor = visual
 	}

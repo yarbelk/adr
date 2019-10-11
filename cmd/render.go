@@ -38,6 +38,7 @@ func Render(renderDir, baseTmpl, fileDir string) {
 	}
 	for _, file := range files {
 		inputFile := file.Name()
+		log.Println("looking at filename", inputFile)
 		adr := adr.ADR{}
 		func() {
 			f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0644)
