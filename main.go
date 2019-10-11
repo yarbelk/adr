@@ -15,7 +15,7 @@
 
 package main
 
-import "github.com/yarbelk/adr/cmd"
+import "gitlab.com/yarbelk/adr/cmd"
 
 func main() {
 	cmd.Execute()

@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/yarbelk/adr/src/adr"
-	"github.com/yarbelk/adr/src/serializer"
+	"gitlab.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/serializer"
 )
 
 type FileRepo struct {

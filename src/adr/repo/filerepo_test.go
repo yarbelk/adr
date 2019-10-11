@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/adr"
 )
 
 var goodTomlADR = `Title = "Test Title"

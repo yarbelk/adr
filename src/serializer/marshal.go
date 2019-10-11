@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/BurntSushi/toml"
-	"github.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/adr"
 )
 
 // BufferMarshaller is a simple wrapper arround a reader

@@ -3,7 +3,7 @@ package adr_test
 import (
 	"testing"
 
-	"github.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/adr"
 )
 
 func TestFilename(t *testing.T) {

@@ -1,6 +1,6 @@
 package serializer
 
-import "github.com/yarbelk/adr/src/adr"
+import "gitlab.com/yarbelk/adr/src/adr"
 
 type Unmarshaller interface {
 	Unmarshal(*adr.ADR) error

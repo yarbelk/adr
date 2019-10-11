@@ -27,8 +27,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/yarbelk/adr/src/adr"
-	"github.com/yarbelk/adr/src/serializer"
+	"gitlab.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/serializer"
 )
 
 type authorsFlag []string
