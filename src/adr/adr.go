@@ -14,7 +14,7 @@ type Impact string
 
 const (
 	Draft      Status = "DRAFT"
-	Approved   Status = "Approved"
+	Approved   Status = "Accepted"
 	Superceded Status = "Superceded"
 )
 
