@@ -32,8 +32,10 @@ var initCmd = &cobra.Command{
 	Long: `Create the adr docs dir (if it doesn't exist) and set up a config file:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
-		fmt.Println("dir is", viper.GetString("ADRDir"))
+		if verbose {
+			fmt.Println("init called")
+			fmt.Println("dir is", viper.GetString("ADRDir"))
+		}
 		updateOrCreateConf(viper.GetString("ADRDir"), viper.GetString("renderDir"))
 		os.MkdirAll(viper.GetString("ADRDir"), os.ModePerm)
 	},
@@ -49,7 +51,9 @@ func updateOrCreateConf(dir, renderDir string) {
 			os.Exit(1)
 		}
 		m, e := toml.DecodeReader(f, &c)
-		fmt.Printf("%v\n, %v\n %v\n", c, m, e)
+		if verbose {
+			fmt.Printf("%v\n, %v\n %v\n", c, m, e)
+		}
 	}()
 	f, err := os.OpenFile(".adr.toml", os.O_RDWR|os.O_TRUNC, 0644)
 	defer f.Close()

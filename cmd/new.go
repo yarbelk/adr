@@ -55,7 +55,9 @@ func (i *adrFlag) String() string {
 
 func (i *adrFlag) Set(value string) error {
 	v, err := strconv.Atoi(value)
-	fmt.Println("related/supercedes", v, err)
+	if verbose {
+		fmt.Println("related/supercedes", v, err)
+	}
 	if err != nil {
 		return err
 	}

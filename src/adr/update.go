@@ -1,7 +1,6 @@
 package adr
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -10,7 +9,6 @@ import (
 
 func (a ADR) UpdateFile(filedir string) error {
 	fp := filepath.Join(filedir, a.Filename())
-	fmt.Printf("Update file '%s', with ADR '%+v\n", fp, a)
 	f, err := os.OpenFile(fp, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	defer f.Close()
 	if err != nil {
