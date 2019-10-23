@@ -28,10 +28,30 @@ format:
     - go vet $(go list ./... | grep -v /vendor/)
     - go test -race $(go list ./... | grep -v /vendor/)
 
-compile:
+compile-linux:
   stage: build
   script:
-    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/mybinary
+    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/adr
   artifacts:
     paths:
-      - mybinary
+      - adr
+
+compile-windows:
+  stage: build
+  variables:
+    GOOS: windows
+  script:
+    - GOOS=windows go build -o $CI_PROJECT_DIR/adr.exe
+  artifacts:
+    paths:
+      - adr.exe
+
+compile-darwin:
+  stage: build
+  variables:
+    GOOS: darwin
+  script:
+    - go build -o $CI_PROJECT_DIR/adr.darwin
+  artifacts:
+    paths:
+      - adr.darwin
