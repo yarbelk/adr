@@ -3,30 +3,34 @@ package repo
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 
 	"gitlab.com/yarbelk/adr/src/adr"
+	"gitlab.com/yarbelk/adr/src/ioutils"
 	"gitlab.com/yarbelk/adr/src/serializer"
 )
 
 type FileRepo struct {
 	dir  string
 	adrs map[int]adr.ADR
+	keys []int
 
 	newUnmarshaller func(io.Reader) serializer.Unmarshaller
 	newMarshaller   func(io.Writer) serializer.Marshaller
 }
 
+// NewFileRepo with provided unmarshalers and marshallers.  Instantiates from the directory
 func NewFileRepo(dir string, newUnmarshaller func(io.Reader) serializer.Unmarshaller, newMarshaller func(io.Writer) serializer.Marshaller) FileRepo {
-	files, err := ioutil.ReadDir(dir)
+	files, err := ioutils.ReadDir(dir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	keys := make([]int, 0, len(files))
 	mapADR := make(map[int]adr.ADR)
 	re := regexp.MustCompile("^ADR-[[:digit:]]{4}$")
 	for _, file := range files {
@@ -34,7 +38,7 @@ func NewFileRepo(dir string, newUnmarshaller func(io.Reader) serializer.Unmarsha
 			continue
 		}
 		fp := filepath.Join(dir, file.Name())
-		oldADR := new(adr.ADR)
+		newADR := new(adr.ADR)
 
 		// Sooo.  this is the make the defer fire earlier; because i
 		// don't want them all to pile up.  This is *not* supposed to
@@ -46,21 +50,37 @@ func NewFileRepo(dir string, newUnmarshaller func(io.Reader) serializer.Unmarsha
 			}
 			defer f.Close()
 
-			if err := newUnmarshaller(f).Unmarshal(oldADR); err != nil {
+			if err := newUnmarshaller(f).Unmarshal(newADR); err != nil {
 				log.Fatal("failed to load old ADR in update related", err)
 			}
-			mapADR[oldADR.Number] = *oldADR
+			mapADR[newADR.Number] = *newADR
+			keys = append(keys, newADR.Number)
 			return
 		}()
 	}
+	sort.Ints(keys)
 	repo := FileRepo{
 		dir:             dir,
+		keys:            keys,
 		adrs:            mapADR,
 		newMarshaller:   newMarshaller,
 		newUnmarshaller: newUnmarshaller,
 	}
 
 	return repo
+}
+
+// List out the adrs in order
+func (repo FileRepo) List() []*adr.ADR {
+	results := make([]*adr.ADR, 0, len(repo.keys))
+	for _, key := range repo.keys {
+		a, err := repo.Get(key)
+		if err != nil {
+			log.Fatal(err)
+		}
+		results = append(results, a)
+	}
+	return results
 }
 
 // Get an adr by its id number (so, ADR-0001, pass in a '1')

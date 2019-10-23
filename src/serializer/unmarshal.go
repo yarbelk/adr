@@ -13,7 +13,7 @@ type BufferUnmarshaller struct {
 }
 
 // NewUnmarshal is what it says
-func NewUnmarshal(r io.Reader) BufferUnmarshaller {
+func NewUnmarshal(r io.Reader) Unmarshaller {
 	return BufferUnmarshaller{r}
 }
 

@@ -17,16 +17,12 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"path"
-	"sort"
 
-	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gitlab.com/yarbelk/adr/src/adr"
-	"gitlab.com/yarbelk/adr/src/ioutils"
+	"gitlab.com/yarbelk/adr/src/adr/repo"
+	"gitlab.com/yarbelk/adr/src/serializer"
 )
 
 // listCmd represents the list command
@@ -52,28 +48,10 @@ type adrF struct {
 
 func listADRs(cmd *cobra.Command, args []string) {
 	fileDir := viper.GetString("ADRDir")
-	files, err := ioutils.ReadDir(fileDir)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	adrs := make([]adrF, 0, len(files))
-	for _, file := range files {
-		inputFile := file.Name()
-		adr := adr.ADR{}
-		func() {
-			f, err := os.OpenFile(path.Join(fileDir, inputFile), os.O_RDONLY, 0644)
-			defer f.Close()
-			if err != nil {
-				log.Fatal("failed to open adr file", inputFile, err)
-			}
-			toml.DecodeReader(f, &adr)
-		}()
-		adrs = append(adrs, adrF{inputFile, adr})
-	}
-	sort.Slice(adrs, func(i, j int) bool { return adrs[i].adr.Number < adrs[j].adr.Number })
+	fileRepo := repo.NewFileRepo(fileDir, serializer.NewUnmarshal, serializer.NewMarshal)
+	adrs := fileRepo.List()
 	for _, a := range adrs {
-		fmt.Printf("%s\t%s\t%s\n", a.filename, a.adr.Title, a.adr.Status)
+		fmt.Printf("%s\t%s\t%s\n", a.Filename(), a.Title, a.Status)
 	}
 }
 
