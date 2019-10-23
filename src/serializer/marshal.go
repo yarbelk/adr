@@ -13,7 +13,7 @@ type BufferMarshaller struct {
 }
 
 // NewMarshal is what it says
-func NewMarshal(r io.Writer) BufferMarshaller {
+func NewMarshal(r io.Writer) Marshaller {
 	return BufferMarshaller{r}
 }
 
